@@ -2,8 +2,8 @@
 
 Onda 고객 인게이지먼트 플랫폼 React Native SDK — 네이티브 코어(iOS/Android) 브리지.
 
-> 상태: **M3 골격**. 브리지는 코어 API 동결 후 착수한다 (순서 고정 — PRD-01A 6장).
-> 공개 TS API 표면 확정, TurboModule 네이티브 배선은 구현 예정.
+> 상태: **M3 브리지 구현**. 무상태 TS 레이어(invoke/emit·리스너·콜드스타트 재생) + iOS/Android 네이티브 모듈.
+> JS 경계 직렬화·리스너 재생은 Jest로 검증(node 부재로 이 환경 미실행 — CI 검증). 네이티브 배선은 RN 앱 통합 테스트 필요.
 
 ## 설치 (npm — 예정)
 
@@ -21,8 +21,18 @@ await Onda.identify('user-123');
 Onda.track('product_viewed', { product_id: 'P-1', price: 12900 });
 
 const result = await Onda.registerForPush();
-const initial = await Onda.getInitialPushPayload(); // 콜드 스타트 처리
+
+// 리스너 — 콜드 스타트 유실 0 (등록 전 발생분은 네이티브 버퍼 재생)
+const sub = Onda.addListener('pushOpened', (p) => navigate(p.deepLink));
+const initial = await Onda.getInitialPushPayload(); // 이중 경로
+// sub.remove() 로 해제
 ```
+
+## 네이티브 배선
+
+- iOS: `ios/OndaModule.swift`(RCTEventEmitter) — `OndaSDK` 코어 위임, podspec autolinking.
+- Android: `android/.../OndaModule.kt`(+`OndaPackage`) — `io.onda:onda-android` 코어 위임.
+- 브리지는 무상태: 단일 `invoke(method,args)` + `emit(onda_pushOpened/received)` 계약만 (PRD-01A 4장).
 
 ## 아키텍처 (PRD-01A 1.1 · 4장)
 

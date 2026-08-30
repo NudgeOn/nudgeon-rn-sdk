@@ -1,0 +1,26 @@
+// RN Android 브리지 모듈 (PRD-01A 3.3). 네이티브 코어(io.onda:onda-android)에 위임.
+buildscript {
+  repositories { google(); mavenCentral() }
+  dependencies { classpath("com.android.tools.build:gradle:8.2.0") }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
+
+android {
+  namespace "io.onda.rn"
+  compileSdk 34
+  defaultConfig { minSdk 26 }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions { jvmTarget = "17" }
+}
+
+repositories { google(); mavenCentral() }
+
+dependencies {
+  implementation "com.facebook.react:react-android"     // RN이 프로젝트에서 버전 주입
+  implementation "io.onda:onda-android:0.1.0"           // Onda Android 코어
+}
