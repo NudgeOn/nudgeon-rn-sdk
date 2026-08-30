@@ -1,0 +1,21 @@
+{
+  "name": "@onda/react-native",
+  "version": "0.1.0",
+  "description": "Onda 고객 인게이지먼트 플랫폼 React Native SDK (네이티브 코어 브리지)",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": ["lib", "src", "android", "ios", "*.podspec"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.73.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0"
+  }
+}
