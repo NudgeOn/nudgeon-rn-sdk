@@ -5,22 +5,33 @@
   "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "files": ["lib", "src", "android", "ios", "*.podspec", "LICENSE", "NOTICE", "TRADEMARKS.md"],
+  "files": [
+    "lib",
+    "src",
+    "android",
+    "ios",
+    "*.podspec",
+    "LICENSE",
+    "NOTICE",
+    "TRADEMARKS.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": ">=0.73.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/react": "^19.0.0",
     "@types/jest": "^29.5.0",
+    "@types/react": "^18.3.0",
     "jest": "^29.7.0",
+    "react": "18.3.1",
+    "react-native": "0.76.0",
     "ts-jest": "^29.2.0",
-    "react-native": "0.76.0"
+    "typescript": "^5.7.0"
   }
 }

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: typecheck · jest · build · pack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # 패키지 산출물 검증 — 선언된 main/types(lib/index.js, lib/index.d.ts)가 tarball에 포함되는지 확인.
+      - name: Pack dry-run
+        run: |
+          rm -rf lib
+          npm pack --dry-run 2>&1 | tee pack.log
+          for f in lib/index.js lib/index.d.ts; do
+            if ! grep -q "$f" pack.log; then
+              echo "::error::npm pack 결과에 $f 가 없습니다 (prepack 빌드 확인)"
+              exit 1
+            fi
+          done
