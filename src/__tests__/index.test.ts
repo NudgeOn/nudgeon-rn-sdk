@@ -11,7 +11,7 @@ const invokeMock = jest.fn(
 
 jest.mock("react-native", () => ({
   NativeModules: {
-    OndaModule: {
+    NudgeOnModule: {
       invoke: invokeMock,
       addListener: jest.fn(),
       removeListeners: jest.fn(),
@@ -26,7 +26,7 @@ jest.mock("react-native", () => ({
 }));
 
 // 목 등록 후 import (모듈 로드 시 emitter 생성).
-import Onda from "../index";
+import NudgeOn from "../index";
 
 function emit(name: string, raw: string) {
   (listeners[name] || []).forEach((cb) => cb(raw));
@@ -39,7 +39,7 @@ beforeEach(() => {
 
 describe("직렬화 경계", () => {
   it("track args를 JSON으로 직렬화해 invoke 호출", async () => {
-    await Onda.track("product_viewed", { product_id: "P-1", price: 12900 });
+    await NudgeOn.track("product_viewed", { product_id: "P-1", price: 12900 });
     expect(invokeMock).toHaveBeenCalledWith(
       "track",
       JSON.stringify({ name: "product_viewed", properties: { product_id: "P-1", price: 12900 } }),
@@ -47,34 +47,34 @@ describe("직렬화 경계", () => {
   });
 
   it("빈 인자 메서드는 {}로 직렬화", async () => {
-    await Onda.flush();
+    await NudgeOn.flush();
     expect(invokeMock).toHaveBeenCalledWith("flush", "{}");
   });
 
   it("결과 JSON을 파싱해 반환", async () => {
     invokeMock.mockResolvedValueOnce('"granted"');
-    await expect(Onda.registerForPush()).resolves.toBe("granted");
+    await expect(NudgeOn.registerForPush()).resolves.toBe("granted");
   });
 
   it("null 결과를 null로 반환 (getInitialPushPayload 미탑재)", async () => {
     invokeMock.mockResolvedValueOnce("null");
-    await expect(Onda.getInitialPushPayload()).resolves.toBeNull();
+    await expect(NudgeOn.getInitialPushPayload()).resolves.toBeNull();
   });
 });
 
 describe("리스너 재생", () => {
   it("네이티브 emit(JSON 문자열)을 파싱해 핸들러에 전달", () => {
     const got: string[] = [];
-    Onda.addListener("pushOpened", (p) => got.push(p.messageId));
+    NudgeOn.addListener("pushOpened", (p) => got.push(p.messageId));
     emit(
-      "onda_pushOpened",
+      "nudgeon_pushOpened",
       JSON.stringify({ messageId: "m1", title: "t", body: "b", data: {} }),
     );
     expect(got).toEqual(["m1"]);
   });
 
   it("구독 시 네이티브 버퍼 재생을 요청 (콜드 스타트 유실 0)", () => {
-    Onda.addListener("pushReceived", () => {});
+    NudgeOn.addListener("pushReceived", () => {});
     expect(invokeMock).toHaveBeenCalledWith(
       "replayBuffer",
       JSON.stringify({ event: "pushReceived" }),

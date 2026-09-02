@@ -1,7 +1,7 @@
 {
-  "name": "@onda/react-native",
+  "name": "@nudgeon/react-native",
   "version": "0.1.0",
-  "description": "Onda 고객 인게이지먼트 플랫폼 React Native SDK (네이티브 코어 브리지)",
+  "description": "NudgeOn 고객 인게이지먼트 플랫폼 React Native SDK (네이티브 코어 브리지)",
   "license": "Apache-2.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

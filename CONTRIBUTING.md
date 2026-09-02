@@ -1,6 +1,6 @@
-# Contributing to the Onda React Native SDK
+# Contributing to the NudgeOn React Native SDK
 
-Thank you for contributing to Onda.
+Thank you for contributing to NudgeOn.
 
 ## License for contributions
 

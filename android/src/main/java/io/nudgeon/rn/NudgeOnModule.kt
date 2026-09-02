@@ -1,37 +1,37 @@
-package io.onda.rn
+package io.nudgeon.rn
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import io.onda.sdk.Onda
-import io.onda.sdk.OndaConfig
-import io.onda.sdk.PushPayload
+import io.nudgeon.sdk.NudgeOn
+import io.nudgeon.sdk.NudgeOnConfig
+import io.nudgeon.sdk.PushPayload
 import org.json.JSONObject
 import java.util.UUID
 
 /**
- * RN 브리지 (Android) — 무상태. invoke(method,args)를 io.onda.sdk 코어로 위임하고,
- * 코어 이벤트를 onda_pushOpened/received로 emit한다 (PRD-01A 4장).
+ * RN 브리지 (Android) — 무상태. invoke(method,args)를 io.nudgeon.sdk 코어로 위임하고,
+ * 코어 이벤트를 nudgeon_pushOpened/received로 emit한다 (PRD-01A 4장).
  */
-class OndaModule(private val reactCtx: ReactApplicationContext) :
+class NudgeOnModule(private val reactCtx: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactCtx) {
 
   private var openedToken: UUID? = null
   private var receivedToken: UUID? = null
 
-  override fun getName() = "OndaModule"
+  override fun getName() = "NudgeOnModule"
 
   override fun initialize() {
     super.initialize()
-    openedToken = Onda.onPushOpened { emit("onda_pushOpened", it) }
-    receivedToken = Onda.onPushReceived { emit("onda_pushReceived", it) }
+    openedToken = NudgeOn.onPushOpened { emit("nudgeon_pushOpened", it) }
+    receivedToken = NudgeOn.onPushReceived { emit("nudgeon_pushReceived", it) }
   }
 
   override fun invalidate() {
-    openedToken?.let { Onda.off(it) }
-    receivedToken?.let { Onda.off(it) }
+    openedToken?.let { NudgeOn.off(it) }
+    receivedToken?.let { NudgeOn.off(it) }
     super.invalidate()
   }
 
@@ -46,35 +46,35 @@ class OndaModule(private val reactCtx: ReactApplicationContext) :
     val args = runCatching { JSONObject(argsJson) }.getOrDefault(JSONObject())
     when (method) {
       "initialize" -> {
-        Onda.initialize(
+        NudgeOn.initialize(
           reactCtx.applicationContext,
-          OndaConfig(sdkKey = args.optString("sdkKey"), apiHost = args.optString("apiHost")),
+          NudgeOnConfig(sdkKey = args.optString("sdkKey"), apiHost = args.optString("apiHost")),
         )
         promise.resolve(null)
       }
-      "identify" -> { Onda.identify(args.optString("externalId")); promise.resolve(null) }
-      "reset" -> { Onda.reset(); promise.resolve(null) }
+      "identify" -> { NudgeOn.identify(args.optString("externalId")); promise.resolve(null) }
+      "reset" -> { NudgeOn.reset(); promise.resolve(null) }
       "setUserAttributes" -> {
-        Onda.setUserAttributes(args.optJSONObject("attrs").toMap()); promise.resolve(null)
+        NudgeOn.setUserAttributes(args.optJSONObject("attrs").toMap()); promise.resolve(null)
       }
       "track" -> {
-        Onda.track(args.optString("name"), args.optJSONObject("properties").toMap())
+        NudgeOn.track(args.optString("name"), args.optJSONObject("properties").toMap())
         promise.resolve(null)
       }
-      "flush" -> { Onda.flush(); promise.resolve(null) }
-      "setPushSubscription" -> { Onda.setPushSubscription(args.optBoolean("optedIn", true)); promise.resolve(null) }
+      "flush" -> { NudgeOn.flush(); promise.resolve(null) }
+      "setPushSubscription" -> { NudgeOn.setPushSubscription(args.optBoolean("optedIn", true)); promise.resolve(null) }
       "setLogLevel" -> promise.resolve(null)
-      "getDeviceId" -> promise.resolve(Onda.getDeviceId())
-      "getAnonId" -> promise.resolve(Onda.getAnonId())
+      "getDeviceId" -> promise.resolve(NudgeOn.getDeviceId())
+      "getAnonId" -> promise.resolve(NudgeOn.getAnonId())
       "getInitialPushPayload" ->
-        promise.resolve(Onda.getInitialPushPayload()?.let { payloadJson(it) })
+        promise.resolve(NudgeOn.getInitialPushPayload()?.let { payloadJson(it) })
       "replayBuffer" -> promise.resolve(null) // 코어 EventBus 자동 재생 — no-op
       "registerForPush" -> {
         // Activity 권한 요청은 호스트가 처리. 여기선 현재 상태 반영.
-        Onda.registerForPush(currentActivity) { r -> promise.resolve(r.name.lowercase()) }
+        NudgeOn.registerForPush(currentActivity) { r -> promise.resolve(r.name.lowercase()) }
       }
       "getPushSubscription" -> {
-        val s = Onda.getPushSubscription()
+        val s = NudgeOn.getPushSubscription()
         promise.resolve(
           JSONObject()
             .put("serviceOptIn", s.serviceOptIn)
