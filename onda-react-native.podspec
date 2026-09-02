@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.name         = "onda-react-native"
   s.version      = package["version"]
   s.summary      = package["description"]
-  s.license      = package["license"]
+  s.license      = { :type => package["license"], :file => "LICENSE" }
   s.author       = { "Onda" => "dev@onda.io" }
   s.homepage     = "https://github.com/ondahq/onda-rn-sdk"
   s.platforms    = { :ios => "15.0" }

@@ -41,4 +41,4 @@ const initial = await Onda.getInitialPushPayload(); // 이중 경로
 - New Architecture(TurboModule) 기준, 구 아키텍처 호환 레이어 제공.
 - `onda-ios-sdk`·`onda-android-sdk`를 네이티브 의존으로 autolinking.
 
-MIT License.
+Apache License 2.0. See [LICENSE](LICENSE).
