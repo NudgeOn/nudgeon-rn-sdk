@@ -3,6 +3,17 @@
   "version": "0.1.0",
   "description": "NudgeOn 고객 인게이지먼트 플랫폼 React Native SDK (네이티브 코어 브리지)",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/NudgeOn/nudgeon-rn-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NudgeOn/nudgeon-rn-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NudgeOn/nudgeon-rn-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [

@@ -8,9 +8,9 @@ Pod::Spec.new do |s|
   s.summary      = package["description"]
   s.license      = { :type => package["license"], :file => "LICENSE" }
   s.author       = { "NudgeOn" => "dev@nudgeon.io" }
-  s.homepage     = "https://github.com/nudgeon/nudgeon-rn-sdk"
+  s.homepage     = "https://github.com/NudgeOn/nudgeon-rn-sdk"
   s.platforms    = { :ios => "15.0" }
-  s.source       = { :git => "https://github.com/nudgeon/nudgeon-rn-sdk.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/NudgeOn/nudgeon-rn-sdk.git", :tag => "#{s.version}" }
   s.source_files = "ios/**/*.{swift,h,m,mm}"
   s.swift_version = "5.9"
 
