@@ -42,3 +42,7 @@ const initial = await NudgeOn.getInitialPushPayload(); // 이중 경로
 - `nudgeon-ios-sdk`·`nudgeon-android-sdk`를 네이티브 의존으로 autolinking.
 
 Apache License 2.0. See [LICENSE](LICENSE).
+
+## 게시 (메인테이너)
+
+`package.json` 버전을 올려 머지한 뒤 태그 `X.Y.Z`를 푸시하면 **Publish to npm** 워크플로가 검증 후 `npm publish --provenance`로 게시한다. 시크릿 `NPM_TOKEN`(publish 권한) 필요. 이미 게시된 버전은 건너뛴다.
