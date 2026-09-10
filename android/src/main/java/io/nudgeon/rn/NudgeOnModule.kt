@@ -98,6 +98,8 @@ class NudgeOnModule(private val reactCtx: ReactApplicationContext) :
     put("title", p.title)
     put("body", p.body)
     p.deepLink?.let { put("deepLink", it) }
+    p.imageUrl?.let { put("imageUrl", it) }
+    put("silent", p.silent)
     put("data", JSONObject(p.data as Map<*, *>))
   }.toString()
 

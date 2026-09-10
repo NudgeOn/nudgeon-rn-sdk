@@ -22,5 +22,5 @@ repositories { google(); mavenCentral() }
 
 dependencies {
   implementation "com.facebook.react:react-android"     // RN이 프로젝트에서 버전 주입
-  implementation "io.nudgeon:nudgeon-android:0.1.0"           // NudgeOn Android 코어
+  implementation "io.nudgeon:nudgeon-sdk:0.1.2"               // NudgeOn Android 코어 (Maven Central 좌표 = nudgeon-sdk)
 }

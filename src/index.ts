@@ -29,7 +29,11 @@ export interface PushPayload {
   title: string;
   body: string;
   deepLink?: string;
+  /** 리치 알림 이미지 URL — 네이티브 SDK가 표시(iOS NSE 첨부·Android BigPicture)한다. */
+  imageUrl?: string;
   data: Record<string, string>;
+  /** 무음(백그라운드) 푸시. 네이티브가 소비하므로 리스너에는 오지 않는다 — 형태 대칭용. */
+  silent?: boolean;
 }
 
 export type PushPermissionResult = "granted" | "denied" | "provisional";
