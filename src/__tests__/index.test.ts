@@ -20,7 +20,7 @@ jest.mock("react-native", () => ({
   NativeEventEmitter: class {
     addListener(name: string, cb: Listener) {
       (listeners[name] ||= []).push(cb);
-      return { remove: () => { listeners[name] = []; } };
+      return { remove: () => { listeners[name] = listeners[name].filter(listener => listener !== cb); } };
     }
   },
 }));
@@ -33,6 +33,7 @@ function emit(name: string, raw: string) {
 }
 
 beforeEach(() => {
+  for (const key of Object.keys(listeners)) delete listeners[key];
   invokeMock.mockClear();
   invokeMock.mockResolvedValue("null");
 });
@@ -60,9 +61,26 @@ describe("직렬화 경계", () => {
     invokeMock.mockResolvedValueOnce("null");
     await expect(NudgeOn.getInitialPushPayload()).resolves.toBeNull();
   });
+
+  it("decodes escaped string identifiers from the native JSON contract", async () => {
+    invokeMock.mockResolvedValueOnce(JSON.stringify('device-"id"'));
+    await expect(NudgeOn.getDeviceId()).resolves.toBe('device-"id"');
+  });
 });
 
 describe("리스너 재생", () => {
+  it("removes each native subscription once without removing another JS listener", () => {
+    const got: string[] = [];
+    const first = NudgeOn.addListener("pushOpened", () => got.push("first"));
+    const second = NudgeOn.addListener("pushOpened", () => got.push("second"));
+    first.remove(); first.remove();
+    emit("nudgeon_pushOpened", JSON.stringify({messageId: "m", title: "", body: "", data: {}}));
+    expect(got).toEqual(["second"]);
+    expect(invokeMock.mock.calls.filter(([method]) => method === "releaseListener")).toEqual([
+      ["releaseListener", JSON.stringify({event: "pushOpened"})],
+    ]);
+    second.remove();
+  });
   it("네이티브 emit(JSON 문자열)을 파싱해 핸들러에 전달", () => {
     const got: string[] = [];
     NudgeOn.addListener("pushOpened", (p) => got.push(p.messageId));

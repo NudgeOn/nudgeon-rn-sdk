@@ -41,3 +41,41 @@ jobs:
               exit 1
             fi
           done
+
+  swift-contract:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+
+  native-consumer:
+    name: Fresh ${{ matrix.platform }} consumer
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-latest
+          - platform: ios
+            os: macos-15
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: python3 tests/consumer/prepare.py "$RUNNER_TEMP/consumer"
+      - if: matrix.platform == 'android'
+        working-directory: ${{ runner.temp }}/consumer/android
+        run: ./gradlew :app:assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon
+      - if: matrix.platform == 'ios'
+        working-directory: ${{ runner.temp }}/consumer/ios
+        run: |
+          pod install
+          xcodebuild -workspace NudgeOnBridgeProbe.xcworkspace -scheme NudgeOnBridgeProbe -configuration Debug -destination 'generic/platform=iOS Simulator' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build

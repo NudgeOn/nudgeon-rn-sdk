@@ -9,18 +9,28 @@ import React
 final class NudgeOnModule: RCTEventEmitter {
   private var openedToken: UUID?
   private var receivedToken: UUID?
+  private var listeners: [String: Int] = [:]
 
   override static func requiresMainQueueSetup() -> Bool { false }
   override func supportedEvents() -> [String]! { ["nudgeon_pushOpened", "nudgeon_pushReceived"] }
 
   override func startObserving() {
-    openedToken = NudgeOn.onPushOpened { [weak self] p in self?.forward("nudgeon_pushOpened", p) }
-    receivedToken = NudgeOn.onPushReceived { [weak self] p in self?.forward("nudgeon_pushReceived", p) }
+    // replayBuffer attaches each native event only after its JS listener exists.
   }
 
   override func stopObserving() {
     if let t = openedToken { NudgeOn.off(t) }
     if let t = receivedToken { NudgeOn.off(t) }
+    openedToken = nil; receivedToken = nil; listeners.removeAll()
+  }
+
+  private func attachListeners() {
+    if listeners["pushOpened", default: 0] > 0 && openedToken == nil {
+      openedToken = NudgeOn.onPushOpened { [weak self] p in self?.forward("nudgeon_pushOpened", p) }
+    }
+    if listeners["pushReceived", default: 0] > 0 && receivedToken == nil {
+      receivedToken = NudgeOn.onPushReceived { [weak self] p in self?.forward("nudgeon_pushReceived", p) }
+    }
   }
 
   private func forward(_ event: String, _ p: PushPayload) {
@@ -36,9 +46,9 @@ final class NudgeOnModule: RCTEventEmitter {
     let args = NudgeOnJSON.dict(fromString: argsJson)
     switch method {
     case "initialize":
-      guard let key = args["sdkKey"] as? String, let host = args["apiHost"] as? String,
-            let url = URL(string: host) else { reject("E_ARGS", "initialize 인자 오류", nil); return }
-      NudgeOn.initialize(config: NudgeOnConfig(sdkKey: key, apiHost: url))
+      guard let config = NudgeOnJSON.config(args) else { reject("E_ARGS", "initialize 인자 오류", nil); return }
+      NudgeOn.initialize(config: config)
+      attachListeners()
       resolve(nil)
     case "identify":
       NudgeOn.identify(externalId: args["externalId"] as? String ?? "")
@@ -53,15 +63,25 @@ final class NudgeOnModule: RCTEventEmitter {
     case "flush": NudgeOn.flush(); resolve(nil)
     case "setPushSubscription":
       NudgeOn.setPushSubscription(args["optedIn"] as? Bool ?? true); resolve(nil)
-    case "setLogLevel": resolve(nil)
-    case "getDeviceId": resolve(NudgeOn.getDeviceId())
-    case "getAnonId": resolve(NudgeOn.getAnonId())
+    case "setLogLevel":
+      guard let level = NudgeOnJSON.logLevel(args["level"] as? String ?? "") else { reject("E_ARGS", "logLevel 인자 오류", nil); return }
+      NudgeOn.setLogLevel(level); resolve(nil)
+    case "getDeviceId": resolve(NudgeOn.getDeviceId().flatMap { NudgeOnJSON.string(from: $0) })
+    case "getAnonId": resolve(NudgeOn.getAnonId().flatMap { NudgeOnJSON.string(from: $0) })
     case "getInitialPushPayload":
       resolve(NudgeOn.getInitialPushPayload().flatMap { NudgeOnJSON.string(from: NudgeOnJSON.dict($0)) })
     case "replayBuffer":
-      resolve(nil) // 코어 EventBus가 첫 구독 시 자동 재생 — no-op
+      guard let event = args["event"] as? String, ["pushOpened", "pushReceived"].contains(event) else { reject("E_ARGS", "event 인자 오류", nil); return }
+      listeners[event, default: 0] += 1
+      attachListeners(); resolve(nil)
+    case "releaseListener":
+      let event = args["event"] as? String ?? ""
+      listeners[event] = max(0, listeners[event, default: 0] - 1)
+      if event == "pushOpened", listeners[event] == 0, let token = openedToken { NudgeOn.off(token); openedToken = nil }
+      if event == "pushReceived", listeners[event] == 0, let token = receivedToken { NudgeOn.off(token); receivedToken = nil }
+      resolve(nil)
     case "registerForPush":
-      Task { let r = await NudgeOn.registerForPush(); resolve(r.rawValue) }
+      Task { let r = await NudgeOn.registerForPush(); resolve(NudgeOnJSON.string(from: r.rawValue)) }
     case "getPushSubscription":
       Task {
         let s = await NudgeOn.getPushSubscription()
@@ -73,39 +93,6 @@ final class NudgeOnModule: RCTEventEmitter {
       }
     default:
       reject("E_METHOD", "알 수 없는 메서드: \(method)", nil)
-    }
-  }
-}
-
-/// 브리지 직렬화 헬퍼 (PRD-01A 4장 타입 규칙).
-enum NudgeOnJSON {
-  static func dict(fromString s: String) -> [String: Any] {
-    guard let data = s.data(using: .utf8),
-          let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
-    return obj
-  }
-  static func string(from obj: Any) -> String? {
-    guard let data = try? JSONSerialization.data(withJSONObject: obj) else { return nil }
-    return String(data: data, encoding: .utf8)
-  }
-  static func dict(_ p: PushPayload) -> [String: Any] {
-    var d: [String: Any] = ["messageId": p.messageId, "title": p.title, "body": p.body, "data": p.data]
-    if let c = p.campaignId { d["campaignId"] = c }
-    if let j = p.journeyId { d["journeyId"] = j }
-    if let l = p.deepLink { d["deepLink"] = l }
-    if let i = p.imageUrl { d["imageUrl"] = i }
-    d["silent"] = p.silent
-    return d
-  }
-  static func values(_ raw: [String: Any]) -> [String: NudgeOnValue] {
-    raw.mapValues { v in
-      switch v {
-      case let s as String: return .string(s)
-      case let b as Bool: return .bool(b)
-      case let n as NSNumber: return .number(n.doubleValue)
-      case let a as [String]: return .stringArray(a)
-      default: return .null
-      }
     }
   }
 }

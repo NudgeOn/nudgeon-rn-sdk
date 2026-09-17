@@ -13,6 +13,9 @@ import {
 export interface NudgeOnConfig {
   sdkKey: string;
   apiHost: string;
+  /** iOS App Group shared with the notification service extension. */
+  appGroup?: string;
+  /** iOS only; Android core 0.2.2 has no runtime log-level API. */
   logLevel?: "none" | "error" | "warn" | "info" | "debug";
   flushInterval?: number;
   flushBatchSize?: number;
@@ -48,7 +51,7 @@ export type PushEvent = "pushOpened" | "pushReceived";
 
 /**
  * 네이티브 브리지 계약 (PRD-01A 4장): 단일 invoke(method, argsJson) → resultJson.
- * addListener/removeListeners는 NativeEventEmitter 요건. TurboModule/legacy 모두 이 표면을 만족.
+ * addListener/removeListeners는 NativeEventEmitter 요건. RCTEventEmitter/ReactContextBaseJavaModule 기반 브리지.
  */
 export interface NativeBridge {
   invoke(method: string, argsJson: string): Promise<string>;
@@ -89,7 +92,7 @@ function nativeEventName(event: PushEvent): string {
 
 /**
  * 리스너 등록 (PRD-01A 2.5). 콜드 스타트에서 등록 전 발생분은 네이티브가 최대 20건 버퍼링 →
- * 구독 즉시 replayBuffer 요청으로 재생(유실 0 요구 — RN에서 가장 흔히 깨지는 지점).
+ * 구독 시 해당 이벤트의 버퍼 재생을 요청한다. 메모리 버퍼는 프로세스 종료 후 유지되지 않는다.
  */
 function addListener(
   event: PushEvent,
@@ -102,10 +105,18 @@ function addListener(
   void invoke("replayBuffer", { event }).catch(() => {
     /* 재생 실패는 치명적 아님 — 다음 emit 정상 */
   });
+  const remove = sub.remove.bind(sub);
+  let removed = false;
+  sub.remove = () => {
+    if (removed) return;
+    removed = true;
+    remove();
+    void invoke("releaseListener", { event }).catch(() => {});
+  };
   return sub;
 }
 
-/** 공개 API — iOS/Android와 완전 동형 (PRD-01A 2장) */
+/** 공개 API — iOS/Android 네이티브 코어 위임 (PRD-01A 2장) */
 const NudgeOn = {
   initialize: (config: NudgeOnConfig): Promise<void> =>
     invoke("initialize", config),
@@ -126,7 +137,7 @@ const NudgeOn = {
   getPushSubscription: (): Promise<SubscriptionState> =>
     invoke<SubscriptionState>("getPushSubscription"),
 
-  // 리스너 (콜드 스타트 유실 0)
+  // 리스너 (이벤트별 네이티브 버퍼 재생)
   addListener,
   /** 콜드 스타트 — 푸시로 앱이 열렸으면 payload, 아니면 null (이중 경로) */
   getInitialPushPayload: (): Promise<PushPayload | null> =>
