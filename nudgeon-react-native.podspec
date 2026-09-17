@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   s.swift_version = "5.9"
 
   # 네이티브 코어 — API 완전 동형의 상태 보유자 (PRD-01A 1.1).
-  s.dependency "NudgeOnSDK"
+  s.dependency "NudgeOnSDK", "= 0.2.2"
   # RN(New Architecture 포함) 표준 의존.
   install_modules_dependencies(s) if respond_to?(:install_modules_dependencies)
   s.dependency "React-Core"

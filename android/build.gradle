@@ -1,4 +1,4 @@
-// RN Android 브리지 모듈 (PRD-01A 3.3). 네이티브 코어(io.nudgeon:nudgeon-android)에 위임.
+// RN Android 브리지 모듈 (PRD-01A 3.3). 네이티브 코어(io.nudgeon:nudgeon-sdk)에 위임.
 buildscript {
   repositories { google(); mavenCentral() }
   dependencies { classpath("com.android.tools.build:gradle:8.2.0") }
@@ -9,7 +9,7 @@ apply plugin: "org.jetbrains.kotlin.android"
 
 android {
   namespace "io.nudgeon.rn"
-  compileSdk 34
+  compileSdk 36
   defaultConfig { minSdk 26 }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
@@ -22,5 +22,5 @@ repositories { google(); mavenCentral() }
 
 dependencies {
   implementation "com.facebook.react:react-android"     // RN이 프로젝트에서 버전 주입
-  implementation "io.nudgeon:nudgeon-sdk:0.1.2"               // NudgeOn Android 코어 (Maven Central 좌표 = nudgeon-sdk)
+  implementation "io.nudgeon:nudgeon-sdk:0.2.2"
 }
