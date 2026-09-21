@@ -26,7 +26,7 @@ jest.mock("react-native", () => ({
 }));
 
 // 목 등록 후 import (모듈 로드 시 emitter 생성).
-import NudgeOn from "../index";
+import NudgeOn, { NudgeOnEvents } from "../index";
 
 function emit(name: string, raw: string) {
   (listeners[name] || []).forEach((cb) => cb(raw));
@@ -97,5 +97,23 @@ describe("리스너 재생", () => {
       "replayBuffer",
       JSON.stringify({ event: "pushReceived" }),
     );
+  });
+});
+
+// Public exports must cross the existing native bridge as canonical string names.
+describe("standard events", () => {
+  it.each([
+    [NudgeOnEvents.signUp, "sign_up"],
+    [NudgeOnEvents.login, "login"],
+    [NudgeOnEvents.purchaseCompleted, "purchase_completed"],
+    [NudgeOnEvents.productViewed, "product_viewed"],
+    [NudgeOnEvents.addToCart, "add_to_cart"],
+    [NudgeOnEvents.checkoutStarted, "checkout_started"],
+    ["purchase", "purchase"],
+  ])("serializes %s without renaming or coercing properties", async (name, wireName) => {
+    const properties = { order_id: "order-123", total_amount: 29000, currency: "KRW", item_count: 1 };
+    await NudgeOn.track(name, properties);
+    expect(invokeMock).toHaveBeenCalledTimes(1);
+    expect(invokeMock).toHaveBeenCalledWith("track", JSON.stringify({ name: wireName, properties }));
   });
 });
