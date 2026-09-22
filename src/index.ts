@@ -154,3 +154,5 @@ const NudgeOn = {
 };
 
 export default NudgeOn;
+
+export { NudgeOnAttributes, type NudgeOnStandardAttribute } from "./attributes";

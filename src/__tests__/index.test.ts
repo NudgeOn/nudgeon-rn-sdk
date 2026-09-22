@@ -26,7 +26,7 @@ jest.mock("react-native", () => ({
 }));
 
 // 목 등록 후 import (모듈 로드 시 emitter 생성).
-import NudgeOn, { NudgeOnEvents } from "../index";
+import NudgeOn, { NudgeOnEvents, NudgeOnAttributes } from "../index";
 
 function emit(name: string, raw: string) {
   (listeners[name] || []).forEach((cb) => cb(raw));
@@ -116,4 +116,27 @@ describe("standard events", () => {
     expect(invokeMock).toHaveBeenCalledTimes(1);
     expect(invokeMock).toHaveBeenCalledWith("track", JSON.stringify({ name: wireName, properties }));
   });
+});
+
+// Standard keys retain the established native attribute transport and null semantics.
+it("serializes standard profile keys alongside custom values and unsets", async () => {
+  const attrs = {
+    [NudgeOnAttributes.firstName]: "Minji",
+    [NudgeOnAttributes.lastName]: "Kim",
+    [NudgeOnAttributes.email]: "minji@example.com",
+    [NudgeOnAttributes.phone]: "+821012345678",
+    [NudgeOnAttributes.dateOfBirth]: "1995-03-15",
+    [NudgeOnAttributes.gender]: "F",
+    [NudgeOnAttributes.homeCity]: "Seoul",
+    [NudgeOnAttributes.country]: "KR",
+    [NudgeOnAttributes.language]: "ko",
+    [NudgeOnAttributes.timezone]: "Asia/Seoul",
+    [NudgeOnAttributes.createdAt]: "2026-09-22T00:00:00Z",
+    score: 0, enabled: false, interests: ["music"], removed: null,
+  };
+  await NudgeOn.setUserAttributes(attrs);
+  expect(invokeMock).toHaveBeenCalledTimes(1);
+  const [method, raw] = invokeMock.mock.calls[0]!;
+  expect(method).toBe("setUserAttributes");
+  expect(JSON.parse(raw)).toEqual({ attrs: {"first_name": "Minji", "last_name": "Kim", "email": "minji@example.com", "phone": "+821012345678", "dob": "1995-03-15", "gender": "F", "home_city": "Seoul", "country": "KR", "language": "ko", "timezone": "Asia/Seoul", "created_at": "2026-09-22T00:00:00Z", "score": 0, "enabled": false, "interests": ["music"], "removed": null} });
 });
