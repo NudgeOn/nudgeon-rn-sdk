@@ -4,7 +4,7 @@ Run `npm ci`, then
 `python3 tests/consumer/prepare.py /tmp/nudgeon-rn-consumer-unique`.
 The script refuses to overwrite existing paths, packs the real npm archive,
 creates React Native 0.81.5 and installs that archive. Android minSdk is 26;
-the template uses Kotlin 2.1.20. The iOS podspec resolves public core 0.2.2
+the template uses Kotlin 2.1.20. The iOS podspec resolves public core 0.2.9
 through an immutable spec URL until CocoaPods trunk publication is complete.
 
 CI builds Android arm64 debug and iOS arm64 simulator apps. Compile success
