@@ -22,3 +22,18 @@ NudgeOn sources (`consteval` constant-expression errors). Defining
 `FMT_USE_CONSTEVAL=0` does not fix fmt's unconditional macro detection. CI uses
 macOS 15's supported Xcode toolchain; Xcode 27 compatibility remains unqualified.
 The earlier RN 0.76 iOS build is not evidence for RN 0.81 Android compatibility.
+
+## 0.2.9 candidate and registry gate
+
+The current candidate pins both native cores to 0.2.9. The default probe uses
+the local wrapper and public native packages, with an explicit tagged iOS
+podspec while trunk publication is pending. After all packages are published:
+
+```sh
+python3 tests/consumer/prepare.py /tmp/nudgeon-registry-consumer --registry
+```
+
+This mode resolves the wrapper from npm/pub.dev and the iOS core from CocoaPods
+trunk, without local package or podspec overrides. Build both Android and iOS
+outputs before treating registry-only installation as verified. Earlier core
+versions and Xcode findings above describe historical validation only.

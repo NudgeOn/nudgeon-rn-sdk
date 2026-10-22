@@ -3,9 +3,7 @@
 NudgeOn iOS/Android 코어의 이벤트 수집, 사용자 식별, 푸시 구독과 알림 콜백을
 React Native에서 연결합니다.
 
-**0.1.3 배포 후보이며 npm 게시 전입니다.** iOS 코어 0.2.2와 Android 코어 0.2.8은 공개
-SPM/Git 태그와 Maven Central에 배포되어 있습니다. CocoaPods trunk는 등록
-대기 중이므로 아래 고정 podspec 설정이 필요합니다.
+**0.1.3 배포 후보이며 아직 게시 전입니다.** iOS·Android 코어 **0.2.9 출시 후보**에 맞춰 SQLite 이벤트 큐를 연결합니다. 네이티브 태그·Maven Central 게시가 먼저 필요하며, CocoaPods trunk 게시 전에는 아래 고정 podspec 설정이 필요합니다. 공개 레지스트리만 사용하는 신규 앱 검증은 별도 출시 조건입니다.
 
 
 ## 기본 사용자 속성 (다음 릴리스)
@@ -89,11 +87,11 @@ Kotlin **2.1.20 이상**입니다. CI는 RN 0.81.5의 기본 New Architecture �
 iOS deployment target은 RN 0.81이 요구하는 **15.1 이상**을 사용하세요.
 
 `ios/Podfile`의 앱 target 안에 다음 의존성을 추가한 뒤 `pod install` 하세요.
-이 podspec은 공개 코어 **0.2.2 Git 태그**를 내려받습니다.
+이 podspec은 공개 코어 **0.2.9 Git 태그**를 내려받습니다.
 
 ```ruby
 target 'YourApp' do
-  pod 'NudgeOnSDK', :podspec => 'https://raw.githubusercontent.com/NudgeOn/nudgeon-ios-sdk/87da4258f7b8cbf27041d6b096815158cc0febee/NudgeOnSDK.podspec'
+  pod 'NudgeOnSDK', :podspec => 'https://raw.githubusercontent.com/NudgeOn/nudgeon-ios-sdk/0.2.9/NudgeOnSDK.podspec'
   # 기존 React Native 설정 유지
 end
 ```
@@ -119,7 +117,7 @@ opened.remove();
 
 `flushInterval`은 양의 정수 초, `flushBatchSize`는 양의 정수 건수입니다.
 `appGroup`은 iOS 알림 확장과 공유할 App Group입니다.
-`logLevel`/`setLogLevel`은 iOS 전용입니다. Android 코어 0.2.8는 해당 API가
+`logLevel`/`setLogLevel`은 iOS 전용입니다. Android 코어 0.2.9는 해당 API가
 없어 `E_UNSUPPORTED`를 반환하므로 공통 초기화 설정에서는 생략하세요.
 
 등록 전 콜백은 네이티브 메모리 버퍼(최대 20건)에서 이벤트별로 재생됩니다.
@@ -133,8 +131,8 @@ APNs/FCM 공급자·앱 권한 설정은 별도로 필요합니다. 네이티브
 iOS APNs 토큰/알림 delegate와 Android Firebase 서비스/notification intent를
 연결한 후 앱 화면에서 `registerForPush()`를 호출하세요.
 
-- [iOS 코어 설치](https://github.com/NudgeOn/nudgeon-ios-sdk/tree/0.2.2)
-- [Android 코어 설치](https://github.com/NudgeOn/nudgeon-android-sdk/tree/0.2.8)
+- [iOS 코어 설치](https://github.com/NudgeOn/nudgeon-ios-sdk/tree/0.2.9)
+- [Android 코어 설치](https://github.com/NudgeOn/nudgeon-android-sdk/tree/0.2.9)
 
 구현은 `RCTEventEmitter`와 `ReactContextBaseJavaModule`이며 New Architecture의
 호환 계층을 사용합니다. codegen TurboModule 구현은 아닙니다. 인앱 WebView
